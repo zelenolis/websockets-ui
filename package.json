@@ -2,26 +2,26 @@
     "name": "ws_task",
     "version": "1.0.0",
     "description": "Template for the WebSocket remote control task",
-    "main": "index.js",
+    "main": "index.ts",
     "type": "module",
     "scripts": {
-        "start": "node ./index.js",
-        "start:dev": "nodemon ./index.js",
+        "start": "tsx ./index.ts",
+        "start:dev": "tsx watch ./index.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Andrei Auchynnikau",
     "keywords": [],
     "license": "ISC",
     "devDependencies": {
-        "@types/node": "^20.11.17",
+        "@types/node": "^20.11.18",
         "@types/ws": "^8.5.10",
         "@typescript-eslint/eslint-plugin": "^7.0.1",
         "@typescript-eslint/parser": "^7.0.1",
         "eslint": "^8.56.0",
-        "nodemon": "^3.0.3",
+        "tsx": "^4.7.1",
         "typescript": "^5.3.3"
     },
     "dependencies": {
-        "ws": "^8.8.0"
+        "ws": "^8.16.0"
     }
 }
