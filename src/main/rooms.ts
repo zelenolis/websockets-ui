@@ -1,5 +1,4 @@
 import { RoomsArray } from "../data/interfaces.js";
-import { randomUUID } from "crypto";
 import { serverUsers } from '../main/main.js';
 
 
@@ -8,14 +7,13 @@ const rooms: RoomsArray[] = [];
 let ind = 0;
 
 class Rooms {
-    public createRoom(ip: string) {
-        const userName = serverUsers.getUserNameByIp(ip);
-        const userIndex = serverUsers.getUserIndexByIp(ip);
+    public createRoom(id: number) {
+        const userName = serverUsers.getUserNameById(id);
         const newRoom: RoomsArray = {
             "roomId": ++ind,
             "roomUsers": [{
                 "name": userName,
-                "index": userIndex
+                "index": id
             }]
         };
         rooms.push(newRoom);

@@ -3,6 +3,9 @@ import { primaryParse, regParse } from './utils/parser.js';
 import { serverUsers, updWinners } from './main/main.js';
 import { serverRooms, updateRooms } from './main/rooms.js'
 
+const connectionIds = new Map();
+let ind = 0;
+
 export const newSocket = () => {
 
     const gameWebSocket = new WebSocketServer({port: 3000});
@@ -26,14 +29,16 @@ export const newSocket = () => {
             const primaryData = primaryParse(incoming);
 
             if (primaryData.type === "reg") {
+                connectionIds.set(++ind, connection);
                 const regParsed = regParse(primaryData.data);
-                const regResp = serverUsers.newUser(regParsed, ip);
+                const regResp = serverUsers.newUser(regParsed, ind);
                 connection.send(regResp);
-                connection.send(updWinners());
-                connection.send(updateRooms());
+                allConnectionsSend(updWinners());
+                allConnectionsSend(updateRooms());
             } else if (primaryData.type === "create_room") {
-                serverRooms.createRoom(ip);
-                connection.send(updateRooms());
+                const currentInd = getCurrentInd(connection);
+                serverRooms.createRoom(currentInd);
+                allConnectionsSend(updateRooms());
             } else if (primaryData.type === "add_user_to_room") {
                 //
             } else if (primaryData.type === "create_game") {
@@ -61,4 +66,17 @@ export const newSocket = () => {
         });
     });
 
+}
+
+function allConnectionsSend (data: string) {
+    connectionIds.forEach((c) => {
+        c.send(data);
+    })
+}
+
+function getCurrentInd (data: WebSocket) {
+    for (let [key, value] of connectionIds.entries()) {
+        if (value === data) { return key }
+    }
+    return null
 }

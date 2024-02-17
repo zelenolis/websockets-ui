@@ -1,7 +1,6 @@
 export interface UsersArray {
     "name": string,
     "password": number,
-    "ip": string,
     "index": number,
     "wins": number
 }

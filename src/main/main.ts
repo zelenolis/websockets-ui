@@ -3,15 +3,15 @@ import { NewUser, UsersArray } from "../data/interfaces.js";
 
 const users: UsersArray[] = [];
 
-let ind = 0;
-
 class Users {
-    public newUser (data: NewUser, ip: string) {
+    public newUser (data: NewUser, ind: number) {
         //check if user already exist
         users.forEach((user) => {
             //exists and correct
             if (user.name === data.name && user.password === data.password) {
-                const returnedData = JSON.stringify({"name": user.name,"index": user.index, "error": false, "errorText": ""});
+                const returnedData = JSON.stringify({
+                    "name": user.name,"index": ind, "error": false, "errorText": ""
+                });
                 const returned = JSON.stringify({
                     "type": "reg",
                     "data": returnedData,
@@ -23,7 +23,9 @@ class Users {
             }
             // exists with wrong password
             if (user.name === data.name && user.password !== data.password) {
-                const returnedData = JSON.stringify({"name": user.name,"index": user.index, "error": true, "errorText": "incorrect password"});
+                const returnedData = JSON.stringify({
+                    "name": user.name,"index": ind, "error": true, "errorText": "incorrect password"
+                });
                 const returned = JSON.stringify({
                     "type": "reg",
                     "data": returnedData,
@@ -38,13 +40,14 @@ class Users {
         const createNewUser = {
             "name": data.name,
             "password": data.password,
-            "ip": ip,
-            "index": ++ind,
+            "index": ind,
             "wins": 0
         }
         users.push(createNewUser);
 
-        const returnedData = JSON.stringify({"name": createNewUser.name,"index": createNewUser.index, "error": false, "errorText": ""});
+        const returnedData = JSON.stringify({
+            "name": createNewUser.name,"index": createNewUser.index, "error": false, "errorText": ""
+        });
         const returned = JSON.stringify({
             "type": "reg",
             "data": returnedData,
@@ -54,18 +57,10 @@ class Users {
         return returned
     }
 
-    public getUserIndexByIp(ip: string) {
-        let returned = 0;
-        users.forEach((user) => {
-            if (user.ip === ip) { returned = user.index }
-        });
-        return returned
-    }
-
-    public getUserNameByIp(ip: string) {
+    public getUserNameById(id: number) {
         let returned = '';
         users.forEach((user) => {
-            if (user.ip === ip) { returned = user.name }
+            if (user.index === id) { returned = user.name }
         });
         return returned
     }
