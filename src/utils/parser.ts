@@ -18,5 +18,9 @@ export const regParse = (data: string) => {
         "name": regName,
         "password": regPass
     }
+}
 
+export const addToRoomParse = (data: string) => {
+    const parsed = JSON.parse(data);
+    return parsed.indexRoom;
 }

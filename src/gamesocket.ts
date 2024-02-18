@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { primaryParse, regParse } from './utils/parser.js';
+import { primaryParse, regParse, addToRoomParse } from './utils/parser.js';
 import { serverUsers, updWinners } from './main/main.js';
 import { serverRooms, updateRooms } from './main/rooms.js'
 
@@ -40,7 +40,10 @@ export const newSocket = () => {
                 serverRooms.createRoom(currentInd);
                 allConnectionsSend(updateRooms());
             } else if (primaryData.type === "add_user_to_room") {
-                //
+                const currentInd = getCurrentInd(connection);
+                const roomInd = addToRoomParse(primaryData.data);
+                const gamePair = serverRooms.addToRoom(currentInd, roomInd);
+                sendGame(gamePair[0], gamePair[1])
             } else if (primaryData.type === "create_game") {
                 //
             } else if (primaryData.type === "update_room") {
@@ -79,4 +82,22 @@ function getCurrentInd (data: WebSocket) {
         if (value === data) { return key }
     }
     return null
+}
+
+function getCurrentConnection (data: number) {
+    for (let [key, value] of connectionIds.entries()) {
+        if (key === data) { return value }
+    }
+    return null
+}
+
+function sendGame (user1: number, user2: number) {
+    const data1 = JSON.stringify({ "idGame": 1, "idPlayer": 1 });
+    const send1 = JSON.stringify({ "type": "create_game", "data": data1, "id": 0 });
+    const data2 = JSON.stringify({ "idGame": 1, "idPlayer": 2 });
+    const send2 = JSON.stringify({ "type": "create_game", "data": data2, "id": 0 });
+    const conn1 = getCurrentConnection(user1);
+    const conn2 = getCurrentConnection(user2);
+    conn1.send(send1);
+    conn2.send(send2);
 }
