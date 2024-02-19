@@ -21,7 +21,7 @@ export const newSocket = () => {
 
             // incoming log:
             const incoming = message.toString();
-            //console.log('Received: ' + incoming);
+            console.log('Received: ' + incoming);
 
             // primary pasring
             const primaryData = primaryParse(incoming);
@@ -113,7 +113,7 @@ function startGame (gameNumber: number) {
     const conn2 = getCurrentConnection(user2);
     conn1.send(send1);
     conn2.send(send2);
-    const data3 = JSON.stringify({ currentPlayer: 1 });
+    const data3 = JSON.stringify({ currentPlayer: 2 });
     const send3 = JSON.stringify({ type: "turn", data: data3, "id": 0 });
     conn1.send(send3);
     conn2.send(send3);
@@ -131,7 +131,7 @@ function sendAttack (gameNumber: number, attackData: string) {
 }
 
 function sendTurn (gameNumber: number) {
-    const newTurn = serverGames.getTurn(gameNumber);
+    const newTurn = JSON.stringify({ currentPlayer: serverGames.getTurn(gameNumber) });
     const send = JSON.stringify({ type: "turn", data: newTurn, "id": 0 });
     const user1 = serverGames.getUsersId(gameNumber, 1);
     const user2 = serverGames.getUsersId(gameNumber, 2);

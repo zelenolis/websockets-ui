@@ -7,7 +7,7 @@ const games: GamesArray[] = [];
 class Games {
     public newGame (pl1: number, pl2: number) {
         const newGame = {
-            turn: 1,
+            turn: 2,
             gameId: ++ind,
             player1: 1,
             player1Ind: pl1,
@@ -74,16 +74,13 @@ class Games {
             currentShips = currentGame[0].ships2;
         }
 
-        console.log(`x: ${xCoord}, y: ${yCoord}`);
-        console.log(`current ships[0]: ${JSON.stringify(currentShips[0])}`);
-
         for (let ship of currentShips) {
             const shipX = ship.position.x;
             const shipY = ship.position.y;
             const direction = ship.direction;
             const shipLength = ship.length
             let hits = ship.hits ?? 0;
-            if (direction) {
+            if (!direction) {
                 if (shipX <= xCoord && xCoord < shipX + shipLength && shipY === yCoord) {
                     hits +=1;
                     if (hits >= ship.length) {
@@ -109,7 +106,7 @@ class Games {
             shipStatus = "miss";
 
             nextTurn(gameInd);
-
+            
             return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
 
         }
