@@ -32,13 +32,13 @@ class Rooms {
         if (roomUsers[0].index === userId) {
             return
         }
-        const roomCreator = roomUsers[0].index;
-        const addNew = serverUsers.getUserNameById(userId);
-        currentRoom[0].roomUsers.push({
-            "name": addNew,
-            "index": userId
-        })
-        return [userId, roomCreator];
+        const roomCreatorId = roomUsers[0].index;
+        const roomReadyIndex = rooms.findIndex((e) => {
+            e.roomId === ind
+        });
+        //remove fulfilled room
+        rooms.splice(roomReadyIndex, 1);
+        return [userId, roomCreatorId];
     }
 
 }

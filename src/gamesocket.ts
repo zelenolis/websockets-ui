@@ -1,7 +1,8 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { primaryParse, regParse, addToRoomParse } from './utils/parser.js';
+import { primaryParse, regParse, addToRoomParse, simpleDataParse } from './utils/parser.js';
 import { serverUsers, updWinners } from './main/main.js';
-import { serverRooms, updateRooms } from './main/rooms.js'
+import { serverRooms, updateRooms } from './main/rooms.js';
+import { serverGames } from './main/game.js';
 
 const connectionIds = new Map();
 let ind = 0;
@@ -20,10 +21,7 @@ export const newSocket = () => {
 
             // incoming log:
             const incoming = message.toString();
-            console.log('Received: ' + incoming);
-            //console.log(`req: ${req.toString()}`);
-            //console.log(`socket: ${req.socket.toString()}`);
-            //console.log(`connection: ${connection.toString()}`);
+            //console.log('Received: ' + incoming);
 
             // primary pasring
             const primaryData = primaryParse(incoming);
@@ -43,25 +41,27 @@ export const newSocket = () => {
                 const currentInd = getCurrentInd(connection);
                 const roomInd = addToRoomParse(primaryData.data);
                 const gamePair = serverRooms.addToRoom(currentInd, roomInd);
-                sendGame(gamePair[0], gamePair[1])
-            } else if (primaryData.type === "create_game") {
-                //
-            } else if (primaryData.type === "update_room") {
+                if (!gamePair) { return }
+                const gameInd = serverGames.newGame(gamePair[0], gamePair[1]);
+                sendGame(gamePair[0], gamePair[1], gameInd)
+                allConnectionsSend(updateRooms());
+            } else if (primaryData.type === "add_ships") {
+                const shipsData = simpleDataParse(primaryData.data);
+                const gameIsReady = serverGames.addShips(shipsData.gameId, shipsData.ships, shipsData.indexPlayer);
+                if (gameIsReady) {
+                    startGame(shipsData.gameId);
+                } else {
+                    return
+                }                
+            } else if (primaryData.type === "attack") {
+                const attackData = simpleDataParse(primaryData.data);
+                const processedAttack = serverGames.attack(attackData.gameId, attackData.x, attackData.y, attackData.indexPlayer);
+                sendAttack(attackData.gameId, processedAttack);
+                sendTurn(attackData.gameId);
+            } else if (primaryData.type === "randomAttack") {
                 //
             }
-
-            
-
-            
-/*
-            for (const client of gameWebSocket.clients) {
-                if (client.readyState !== WebSocket.OPEN) continue;
-                if (client === connection) continue;
-                console.log(`sending: ${message}`)
-                client.send(message, { binary: false });
-            }
-*/
-            
+  
         });
 
         connection.on('close', () => {
@@ -91,13 +91,53 @@ function getCurrentConnection (data: number) {
     return null
 }
 
-function sendGame (user1: number, user2: number) {
-    const data1 = JSON.stringify({ "idGame": 1, "idPlayer": 1 });
+function sendGame (user1: number, user2: number, gameInd: number) {
+    const data1 = JSON.stringify({ "idGame": gameInd, "idPlayer": 1 });
     const send1 = JSON.stringify({ "type": "create_game", "data": data1, "id": 0 });
-    const data2 = JSON.stringify({ "idGame": 1, "idPlayer": 2 });
+    const data2 = JSON.stringify({ "idGame": gameInd, "idPlayer": 2 });
     const send2 = JSON.stringify({ "type": "create_game", "data": data2, "id": 0 });
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
     conn1.send(send1);
     conn2.send(send2);
+}
+
+function startGame (gameNumber: number) {
+    const data1 = JSON.stringify({ ships: serverGames.getShips(gameNumber, 1), currentPlayerIndex: 1 });
+    const data2 = JSON.stringify({ ships: serverGames.getShips(gameNumber, 2), currentPlayerIndex: 2 });
+    const send1 = JSON.stringify({ type: "start_game", data: data1, "id": 0 });
+    const send2 = JSON.stringify({ type: "start_game", data: data2, "id": 0 });
+    const user1 = serverGames.getUsersId(gameNumber, 1);
+    const user2 = serverGames.getUsersId(gameNumber, 2);
+    const conn1 = getCurrentConnection(user1);
+    const conn2 = getCurrentConnection(user2);
+    conn1.send(send1);
+    conn2.send(send2);
+    const data3 = JSON.stringify({ currentPlayer: 1 });
+    const send3 = JSON.stringify({ type: "turn", data: data3, "id": 0 });
+    conn1.send(send3);
+    conn2.send(send3);
+}
+
+function sendAttack (gameNumber: number, attackData: string) {
+    const send = JSON.stringify({ type: "attack", data: attackData, "id": 0 });
+    const user1 = serverGames.getUsersId(gameNumber, 1);
+    const user2 = serverGames.getUsersId(gameNumber, 2);
+    const conn1 = getCurrentConnection(user1);
+    const conn2 = getCurrentConnection(user2);
+    console.log(send);
+    conn1.send(send);
+    conn2.send(send);
+}
+
+function sendTurn (gameNumber: number) {
+    const newTurn = serverGames.getTurn(gameNumber);
+    const send = JSON.stringify({ type: "turn", data: newTurn, "id": 0 });
+    const user1 = serverGames.getUsersId(gameNumber, 1);
+    const user2 = serverGames.getUsersId(gameNumber, 2);
+    const conn1 = getCurrentConnection(user1);
+    const conn2 = getCurrentConnection(user2);
+    console.log(`turn: ${newTurn}`)
+    conn1.send(send);
+    conn2.send(send);
 }

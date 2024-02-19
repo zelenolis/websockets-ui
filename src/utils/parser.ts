@@ -24,3 +24,8 @@ export const addToRoomParse = (data: string) => {
     const parsed = JSON.parse(data);
     return parsed.indexRoom;
 }
+
+export const simpleDataParse = (data: string) => {
+    const parsed = JSON.parse(data);
+    return parsed;
+}

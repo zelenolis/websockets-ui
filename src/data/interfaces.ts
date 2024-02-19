@@ -15,6 +15,28 @@ interface Roomusers {
     "index": number
 }
 
+export interface GamesArray {
+    turn: number,
+    gameId: number,
+    player1: number,
+    player1Ind: number,
+    player2: number,
+    player2Ind: number,
+    ships1: Ship[],
+    ships2: Ship[]
+}
+
+export interface Ship {
+    position: {
+        "x": number,
+        "y": number,
+    },
+    "direction": boolean,
+    "length": number,
+    "type": "small"|"medium"|"large"|"huge",
+    "hits"?: number
+}
+
 export interface PrimaryReq {
     type: string,
     data: string,
