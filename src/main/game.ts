@@ -7,7 +7,7 @@ const games: GamesArray[] = [];
 class Games {
     public newGame (pl1: number, pl2: number) {
         const newGame = {
-            turn: 2,
+            turn: 1,
             gameId: ++ind,
             player1: 1,
             player1Ind: pl1,

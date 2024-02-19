@@ -21,7 +21,7 @@ export const newSocket = () => {
 
             // incoming log:
             const incoming = message.toString();
-            console.log('Received: ' + incoming);
+            //console.log('Received: ' + incoming);
 
             // primary pasring
             const primaryData = primaryParse(incoming);
@@ -53,11 +53,19 @@ export const newSocket = () => {
                 } else {
                     return
                 }                
-            } else if (primaryData.type === "attack") {
+            } else if (primaryData.type === "attack") {                
                 const attackData = simpleDataParse(primaryData.data);
-                const processedAttack = serverGames.attack(attackData.gameId, attackData.x, attackData.y, attackData.indexPlayer);
-                sendAttack(attackData.gameId, processedAttack);
-                sendTurn(attackData.gameId);
+                const turn = serverGames.getTurn(attackData.gameId);
+                const player = attackData.indexPlayer;
+                if (turn !== player) {
+                    sendTurn(attackData.gameId);
+                    return;
+                } else {
+                    const processedAttack = serverGames.attack(attackData.gameId, attackData.x, attackData.y, attackData.indexPlayer);
+                    sendAttack(attackData.gameId, processedAttack);
+                    sendTurn(attackData.gameId);
+                }
+                
             } else if (primaryData.type === "randomAttack") {
                 //
             }
@@ -113,7 +121,7 @@ function startGame (gameNumber: number) {
     const conn2 = getCurrentConnection(user2);
     conn1.send(send1);
     conn2.send(send2);
-    const data3 = JSON.stringify({ currentPlayer: 2 });
+    const data3 = JSON.stringify({ currentPlayer: 1 });
     const send3 = JSON.stringify({ type: "turn", data: data3, "id": 0 });
     conn1.send(send3);
     conn2.send(send3);
@@ -125,7 +133,6 @@ function sendAttack (gameNumber: number, attackData: string) {
     const user2 = serverGames.getUsersId(gameNumber, 2);
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
-    console.log(send);
     conn1.send(send);
     conn2.send(send);
 }
@@ -137,7 +144,6 @@ function sendTurn (gameNumber: number) {
     const user2 = serverGames.getUsersId(gameNumber, 2);
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
-    console.log(`turn: ${newTurn}`)
     conn1.send(send);
     conn2.send(send);
 }
