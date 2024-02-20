@@ -67,7 +67,11 @@ export const newSocket = () => {
                 }
                 
             } else if (primaryData.type === "randomAttack") {
-                //
+                const randAttackData = simpleDataParse(primaryData.data);
+                const randomCoords = serverGames.getRandomShot(randAttackData.gameId, randAttackData.indexPlayer);
+                const processedAttack = serverGames.attack(randAttackData.gameId, randomCoords.x, randomCoords.y, randAttackData.indexPlayer);
+                sendAttack(randAttackData.gameId, processedAttack);
+                sendTurn(randAttackData.gameId);
             }
   
         });

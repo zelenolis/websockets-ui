@@ -14,7 +14,9 @@ class Games {
             player2: 2,
             player2Ind: pl2,
             ships1: [],
-            ships2: []
+            ships2: [],
+            filed1: [],
+            filed2: []
         }
         games.push(newGame);
         return newGame.gameId;
@@ -70,8 +72,12 @@ class Games {
 
         if (shootingPlayerId === 1) {
             currentShips = currentGame[0].ships2;
+            currentGame[0].filed1.push({x: xCoord, y: yCoord});
+            console.log(`\nincoming from player ${shootingPlayerId}: ${currentGame[0].filed1}\n`);
         } else {
             currentShips = currentGame[0].ships1;
+            currentGame[0].filed2.push({x: xCoord, y: yCoord});
+            console.log(`\nincoming from player ${shootingPlayerId}: ${currentGame[0].filed2}\n`);
         }
 
         for (let ship of currentShips) {
@@ -114,6 +120,36 @@ class Games {
         return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
         
     }
+
+    public getRandomShot(gameInd: number, shootingPlayerId: number) {
+        const currentGame = games.filter(e => e.gameId === gameInd);
+
+        let randCoords: {x: number, y: number};
+
+        if (shootingPlayerId === 1) {
+            const currentShips = currentGame[0].filed1;
+            do {
+                randCoords = randomCoords();
+            } while (currentShips.some(obj => matchCoords(randCoords.x, randCoords.y, obj.x, obj.y)));
+        } else {
+            const currentShips = currentGame[0].filed2;
+            do {
+                randCoords = randomCoords();
+            } while (currentShips.some(obj => matchCoords(randCoords.x, randCoords.y, obj.x, obj.y)));
+        }
+        return randCoords
+        
+    }
+}
+
+function randomCoords() {
+    const randomX = Math.floor(Math.random() * 10);
+    const randomY = Math.floor(Math.random() * 10);
+    return {x: randomX, y: randomY}
+}
+
+function matchCoords(randX: number, randY: number, x: number, y: number) {
+    return randX === x && randY === y;
 }
 
 function nextTurn (gameInd: number) {

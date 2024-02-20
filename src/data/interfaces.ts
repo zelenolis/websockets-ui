@@ -16,14 +16,21 @@ interface Roomusers {
 }
 
 export interface GamesArray {
-    turn: number,
-    gameId: number,
-    player1: number,
-    player1Ind: number,
-    player2: number,
-    player2Ind: number,
-    ships1: Ship[],
-    ships2: Ship[]
+    "turn": number,
+    "gameId": number,
+    "player1": number,
+    "player1Ind": number,
+    "player2": number,
+    "player2Ind": number,
+    "ships1": Ship[],
+    "ships2": Ship[],
+    "filed1": coords[],
+    "filed2": coords[]
+}
+
+interface coords {
+    "x": number,
+    "y": number
 }
 
 export interface Ship {
