@@ -24,9 +24,9 @@ class Games {
         const currentGame = games.filter(e => e.gameId === gameIndex);
         
         if (gamePlayerIndex === 1) {
-            currentGame[0].ships1.push(ships[0]);
+            currentGame[0].ships1.push(...ships);
         } else {
-            currentGame[0].ships2.push(ships[0]);
+            currentGame[0].ships2.push(...ships);
         }
         if (currentGame[0].ships1.length > 0 && currentGame[0].ships2.length > 0) {
             //game ready
@@ -69,9 +69,9 @@ class Games {
         let shipStatus: string;
 
         if (shootingPlayerId === 1) {
-            currentShips = currentGame[0].ships1;
-        } else {
             currentShips = currentGame[0].ships2;
+        } else {
+            currentShips = currentGame[0].ships1;
         }
 
         for (let ship of currentShips) {
@@ -81,35 +81,37 @@ class Games {
             const shipLength = ship.length
             let hits = ship.hits ?? 0;
             if (!direction) {
-                if (shipX <= xCoord && xCoord < shipX + shipLength && shipY === yCoord) {
+                if (shipX <= xCoord && xCoord < (shipX + shipLength) && shipY === yCoord) {
                     hits +=1;
                     if (hits >= ship.length) {
                         ship.hits = hits;
                         shipStatus = "killed";
+                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
+                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
                     }                    
                 }
             } else {
-                if (shipY <= yCoord && yCoord < shipY + shipLength && shipX === xCoord) {
+                if (shipY <= yCoord && yCoord < (shipY + shipLength) && shipX === xCoord) {
                     hits +=1;
                     if (hits >= ship.length) {
                         ship.hits = hits;
                         shipStatus = "killed";
+                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
+                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
                     }    
                 }
             }
-            shipStatus = "miss";
-
-            nextTurn(gameInd);
-            
-            return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
-
         }
+
+        shipStatus = "miss";
+        nextTurn(gameInd);
+        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
         
     }
 }

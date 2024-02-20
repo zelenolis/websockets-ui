@@ -27,7 +27,6 @@ class Rooms {
             return
         }
         const roomUsers = currentRoom[0].roomUsers;
-        console.log(`currentRoom: ${JSON.stringify(currentRoom[0])}, roomuser: ${JSON.stringify(roomUsers[0])}`);
         //check if user is not the same
         if (roomUsers[0].index === userId) {
             return
