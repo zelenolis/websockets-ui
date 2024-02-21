@@ -2,7 +2,7 @@ import WebSocket, { WebSocketServer } from 'ws';
 import { primaryParse, regParse, addToRoomParse, simpleDataParse } from './utils/parser.js';
 import { serverUsers, updWinners } from './main/main.js';
 import { serverRooms, updateRooms } from './main/rooms.js';
-import { serverGames, finishCheck } from './main/game.js';
+import { serverGames, finishCheck, getGameIdByPlayer } from './main/game.js';
 
 const connectionIds = new Map();
 let ind = 0;
@@ -33,10 +33,12 @@ export const newSocket = () => {
                 connection.send(regResp);
                 allConnectionsSend(updWinners());
                 allConnectionsSend(updateRooms());
+
             } else if (primaryData.type === "create_room") {
                 const currentInd = getCurrentInd(connection);
                 serverRooms.createRoom(currentInd);
                 allConnectionsSend(updateRooms());
+
             } else if (primaryData.type === "add_user_to_room") {
                 const currentInd = getCurrentInd(connection);
                 const roomInd = addToRoomParse(primaryData.data);
@@ -45,6 +47,7 @@ export const newSocket = () => {
                 const gameInd = serverGames.newGame(gamePair[0], gamePair[1]);
                 sendGame(gamePair[0], gamePair[1], gameInd)
                 allConnectionsSend(updateRooms());
+
             } else if (primaryData.type === "add_ships") {
                 const shipsData = simpleDataParse(primaryData.data);
                 const gameIsReady = serverGames.addShips(shipsData.gameId, shipsData.ships, shipsData.indexPlayer);
@@ -53,6 +56,7 @@ export const newSocket = () => {
                 } else {
                     return
                 }                
+
             } else if (primaryData.type === "attack") {                
                 const attackData = simpleDataParse(primaryData.data);
                 const turn = serverGames.getTurn(attackData.gameId);
@@ -76,13 +80,20 @@ export const newSocket = () => {
                 const randomCoords = serverGames.getRandomShot(randAttackData.gameId, randAttackData.indexPlayer);
                 const processedAttack = serverGames.attack(randAttackData.gameId, randomCoords.x, randomCoords.y, randAttackData.indexPlayer);
                 sendAttack(randAttackData.gameId, processedAttack);
-                sendTurn(randAttackData.gameId);
+                if (finishCheck(randAttackData.gameId)) {
+                    sendFinish(randAttackData.gameId, randAttackData.indexPlayer);
+                    return
+                } else {
+                    sendTurn(randAttackData.gameId);
+                }
             }
   
         });
 
         connection.on('close', () => {
-        console.log(`Disconnected ${ip}`);
+            console.log(`Disconnected ${ip}`);
+            const dis = getCurrentInd(connection);
+            checkWhoDisconnected(dis);
         });
     });
 
@@ -166,4 +177,14 @@ function sendFinish(gameNumber: number, playerId: number, ) {
     const conn2 = getCurrentConnection(user2);
     conn1.send(send);
     conn2.send(send);
+}
+
+function checkWhoDisconnected(disconnectedId: number) {
+    const gameId = getGameIdByPlayer(disconnectedId);
+    if (!gameId) {
+        return
+    } else {
+        console.log(gameId.game, gameId.player);
+        sendFinish(gameId.game, gameId.player);
+    }
 }

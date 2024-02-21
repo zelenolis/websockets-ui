@@ -90,14 +90,7 @@ class Games {
                     if (hits >= ship.length) {
                         ship.hits = hits;
                         shipStatus = "killed";
-                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
-                        /*
-                        if (finishCheck(gameInd)) {
-                            return JSON.stringify({winPlayer: shootingPlayerId})
-                        } else {
-                            return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
-                        }
-                        */                       
+                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });                
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
@@ -111,12 +104,6 @@ class Games {
                         ship.hits = hits;
                         shipStatus = "killed";
                         return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
-                        /*
-                        if (finishCheck(gameInd)) {
-                            return JSON.stringify({winPlayer: shootingPlayerId})
-                        } else {
-                            return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
-                        }*/
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
@@ -149,8 +136,8 @@ class Games {
             } while (currentShips.some(obj => matchCoords(randCoords.x, randCoords.y, obj.x, obj.y)));
         }
         return randCoords
-        
     }
+
 }
 
 function randomCoords() {
@@ -181,6 +168,18 @@ export function finishCheck(gameInd: number) {
     } else {
         return false
     }
+}
+
+export function getGameIdByPlayer(playerInd: number) {
+    const game1 = games.filter(e => e.player1Ind === playerInd);
+    if (game1.length > 0) {
+        return {game: game1[0].gameId, player: game1[0].player2};
+    }
+    const game2 = games.filter(e => e.player2Ind === playerInd);
+    if (game2.length > 0) {
+        return {game:game2[0].gameId, player: game2[0].player1};
+    }
+    return undefined
 }
 
 export const serverGames = new Games;
