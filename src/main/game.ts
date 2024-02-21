@@ -73,11 +73,9 @@ class Games {
         if (shootingPlayerId === 1) {
             currentShips = currentGame[0].ships2;
             currentGame[0].filed1.push({x: xCoord, y: yCoord});
-            console.log(`\nincoming from player ${shootingPlayerId}: ${currentGame[0].filed1}\n`);
         } else {
             currentShips = currentGame[0].ships1;
             currentGame[0].filed2.push({x: xCoord, y: yCoord});
-            console.log(`\nincoming from player ${shootingPlayerId}: ${currentGame[0].filed2}\n`);
         }
 
         for (let ship of currentShips) {
@@ -93,6 +91,13 @@ class Games {
                         ship.hits = hits;
                         shipStatus = "killed";
                         return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+                        /*
+                        if (finishCheck(gameInd)) {
+                            return JSON.stringify({winPlayer: shootingPlayerId})
+                        } else {
+                            return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+                        }
+                        */                       
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
@@ -106,6 +111,12 @@ class Games {
                         ship.hits = hits;
                         shipStatus = "killed";
                         return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+                        /*
+                        if (finishCheck(gameInd)) {
+                            return JSON.stringify({winPlayer: shootingPlayerId})
+                        } else {
+                            return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+                        }*/
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
@@ -158,6 +169,17 @@ function nextTurn (gameInd: number) {
         currentGame[0].turn = 2;
     } else {
         currentGame[0].turn = 1;
+    }
+}
+
+export function finishCheck(gameInd: number) {
+    const currentGame = games.filter(e => e.gameId === gameInd);
+    const ships1 = currentGame[0].ships1.every(ship => ship.hits >= ship.length);
+    const ships2 = currentGame[0].ships2.every(ship => ship.hits >= ship.length);
+    if (ships1 || ships2) {
+        return true
+    } else {
+        return false
     }
 }
 

@@ -2,7 +2,7 @@ import WebSocket, { WebSocketServer } from 'ws';
 import { primaryParse, regParse, addToRoomParse, simpleDataParse } from './utils/parser.js';
 import { serverUsers, updWinners } from './main/main.js';
 import { serverRooms, updateRooms } from './main/rooms.js';
-import { serverGames } from './main/game.js';
+import { serverGames, finishCheck } from './main/game.js';
 
 const connectionIds = new Map();
 let ind = 0;
@@ -63,7 +63,12 @@ export const newSocket = () => {
                 } else {
                     const processedAttack = serverGames.attack(attackData.gameId, attackData.x, attackData.y, attackData.indexPlayer);
                     sendAttack(attackData.gameId, processedAttack);
-                    sendTurn(attackData.gameId);
+                    if (finishCheck(attackData.gameId)) {
+                        sendFinish(attackData.gameId, attackData.indexPlayer);
+                        return
+                    } else {
+                        sendTurn(attackData.gameId);
+                    }
                 }
                 
             } else if (primaryData.type === "randomAttack") {
@@ -144,6 +149,17 @@ function sendAttack (gameNumber: number, attackData: string) {
 function sendTurn (gameNumber: number) {
     const newTurn = JSON.stringify({ currentPlayer: serverGames.getTurn(gameNumber) });
     const send = JSON.stringify({ type: "turn", data: newTurn, "id": 0 });
+    const user1 = serverGames.getUsersId(gameNumber, 1);
+    const user2 = serverGames.getUsersId(gameNumber, 2);
+    const conn1 = getCurrentConnection(user1);
+    const conn2 = getCurrentConnection(user2);
+    conn1.send(send);
+    conn2.send(send);
+}
+
+function sendFinish(gameNumber: number, playerId: number, ) {
+    const finishData = JSON.stringify({winPlayer: playerId});
+    const send = JSON.stringify({ type: "finish", data: finishData, "id": 0 });
     const user1 = serverGames.getUsersId(gameNumber, 1);
     const user2 = serverGames.getUsersId(gameNumber, 2);
     const conn1 = getCurrentConnection(user1);
