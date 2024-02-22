@@ -9,6 +9,8 @@ let ind = 0;
 class Rooms {
 
     public createRoom(id: number) {
+        const alreadyCreated = rooms.filter(e => e.roomUsers[0].index === id);
+        if (alreadyCreated.length > 0) { return }
         const userName = serverUsers.getUserNameById(id);
         const newRoom: RoomsArray = {
             "roomId": ++ind,
