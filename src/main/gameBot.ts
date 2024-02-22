@@ -1,6 +1,6 @@
 import { Ship } from "../data/interfaces.js";
 
-let shipsArray = [];
+const shipsArray = [];
 
 export function shipsPlacement() {
     shipsArray.splice(0, shipsArray.length);

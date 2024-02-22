@@ -79,7 +79,7 @@ class Games {
             currentGame[0].filed2.push({x: xCoord, y: yCoord});
         }
 
-        for (let ship of currentShips) {
+        for (const ship of currentShips) {
             const shipX = ship.position.x;
             const shipY = ship.position.y;
             const direction = ship.direction;

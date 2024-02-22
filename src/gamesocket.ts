@@ -16,8 +16,7 @@ export const newSocket = () => {
     gameWebSocket.on('connection', (connection, req) => {
 
         const ip = req.socket.remoteAddress;
-
-        //console.log(`Connected ${ip}`);
+        console.log(`Connected ${ip}`);
 
         connection.on('message', (message) => {
 
@@ -121,7 +120,7 @@ export const newSocket = () => {
         });
 
         connection.on('close', () => {
-            //console.log(`Disconnected ${ip}`);
+            console.log(`Disconnected ${ip}`);
             const dis = getCurrentInd(connection);
             checkWhoDisconnected(dis);
             allConnectionsSend(updWinners());
@@ -137,14 +136,14 @@ function allConnectionsSend (data: string) {
 }
 
 function getCurrentInd (data: WebSocket) {
-    for (let [key, value] of connectionIds.entries()) {
+    for (const [key, value] of connectionIds.entries()) {
         if (value === data) { return key }
     }
     return null
 }
 
 function getCurrentConnection (data: number) {
-    for (let [key, value] of connectionIds.entries()) {
+    for (const [key, value] of connectionIds.entries()) {
         if (key === data) { return value }
     }
     return null
@@ -201,7 +200,7 @@ function sendAttack (gameNumber: number, attackData: string) {
         return
     } else {
         conn2.send(send);
-    };
+    }
 }
 
 function sendTurn (gameNumber: number) {
