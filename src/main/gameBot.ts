@@ -1,8 +1,9 @@
 import { Ship } from "../data/interfaces.js";
 
-const shipsArray = [];
+let shipsArray = [];
 
 export function shipsPlacement() {
+    shipsArray.splice(0, shipsArray.length);
     // number of all ships with their length
     const allShips = [3, 3, 2, 2, 2, 1, 1, 1, 1];
 
@@ -43,7 +44,6 @@ export function shipsPlacement() {
         shipsArray.push(newShip);
     });
 
-    console.log(JSON.stringify(shipsArray));
     return shipsArray
 }
 
@@ -80,21 +80,17 @@ function getFirstShipCells(ship: Ship) {
     const cells =[];
     
     if (!shipDir) {
-        for (let i = 0; i < shipLen; i++) {
+        for (let i = -1; i < shipLen + 1; i++) {
             cells.push({ x: shipX + i, y: shipY });
             cells.push({ x: shipX + i, y: shipY + 1 });
             cells.push({ x: shipX + i, y: shipY - 1 });
           }
-          cells.push({ x: shipX - 1, y: shipY });
-          cells.push({ x: shipX + shipLen + 1, y: shipY });
     } else {
-        for (let i = 0; i < shipLen; i++) {
+        for (let i = -1; i < shipLen + 1; i++) {
             cells.push({ x: shipX, y: shipY + i });
             cells.push({ x: shipX + 1, y: shipY + i });
             cells.push({ x: shipX - 1, y: shipY + i });
           }
-          cells.push({ x: shipX, y: shipY - 1 });
-          cells.push({ x: shipX, y: shipY + shipLen + 1 });
     }
 
     return cells

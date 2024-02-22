@@ -40,6 +40,7 @@ export const newSocket = () => {
                 const currentInd = getCurrentInd(connection);
                 serverRooms.createRoom(currentInd);
                 allConnectionsSend(updateRooms());
+                allConnectionsSend(updWinners());
 
             } else if (primaryData.type === "add_user_to_room") {
                 const currentInd = getCurrentInd(connection);
@@ -68,24 +69,36 @@ export const newSocket = () => {
                     sendTurn(attackData.gameId);
                     return;
                 } else {
-                    const processedAttack = serverGames.attack(attackData.gameId, attackData.x, attackData.y, attackData.indexPlayer);
+                    const processedAttack = serverGames.attack(
+                        attackData.gameId, 
+                        attackData.x, attackData.y, 
+                        attackData.indexPlayer
+                        );
                     sendAttack(attackData.gameId, processedAttack);
                     if (finishCheck(attackData.gameId)) {
                         sendFinish(attackData.gameId, attackData.indexPlayer);
+                        allConnectionsSend(updWinners());
                         return
                     } else {
                         sendTurn(attackData.gameId);
-                        botTurn(attackData.gameId);
+                        if (serverGames.getTurn(attackData.gameId) === 2) {
+                            botTurn(attackData.gameId);
+                        }                        
                     }
                 }
                 
             } else if (primaryData.type === "randomAttack") {
                 const randAttackData = simpleDataParse(primaryData.data);
                 const randomCoords = serverGames.getRandomShot(randAttackData.gameId, randAttackData.indexPlayer);
-                const processedAttack = serverGames.attack(randAttackData.gameId, randomCoords.x, randomCoords.y, randAttackData.indexPlayer);
+                const processedAttack = serverGames.attack(
+                    randAttackData.gameId, 
+                    randomCoords.x, randomCoords.y, 
+                    randAttackData.indexPlayer
+                    );
                 sendAttack(randAttackData.gameId, processedAttack);
                 if (finishCheck(randAttackData.gameId)) {
                     sendFinish(randAttackData.gameId, randAttackData.indexPlayer);
+                    allConnectionsSend(updWinners());
                     return
                 } else {
                     sendTurn(randAttackData.gameId);
@@ -104,6 +117,7 @@ export const newSocket = () => {
             console.log(`Disconnected ${ip}`);
             const dis = getCurrentInd(connection);
             checkWhoDisconnected(dis);
+            allConnectionsSend(updWinners());
         });
     });
 

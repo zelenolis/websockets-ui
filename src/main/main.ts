@@ -1,7 +1,12 @@
 import { NewUser, UsersArray } from "../data/interfaces.js";
 
 
-const users: UsersArray[] = [];
+const users: UsersArray[] = [{
+    name: "Game Bot",
+    password: "superHardPassword666",
+    index: 1000000000,
+    wins: 0
+}];
 
 class Users {
     public newUser (data: NewUser, ind: number) {
@@ -52,17 +57,27 @@ class Users {
         });
         return returned
     }
+
+    public addWins(playerIndex: number) {
+        const addWinUser = users.filter(user => user.index === playerIndex);
+        if (addWinUser[0]) {
+            addWinUser[0].wins += 1;
+        } else {
+            return
+        }
+    }
 }
 
 export function updWinners() {
     const winners = [];
-    users.forEach((user) => {
+    users.filter(e => e.wins > 0).forEach((user) => {
         const winner = {
             "name": user.name,
             "wins": user.wins
         }
         winners.push(winner);
-    })
+    });
+    
     const returnedData = JSON.stringify(winners);
     const returned = JSON.stringify({
         "type": "update_winners",

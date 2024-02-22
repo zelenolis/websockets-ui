@@ -1,6 +1,6 @@
 export interface UsersArray {
     "name": string,
-    "password": number,
+    "password": string,
     "index": number,
     "wins": number
 }
@@ -55,14 +55,14 @@ export interface Registration {
     "data":
         {
             "name": string,
-            "password": number
+            "password": string
         },
     "id": number,
 }
 
 export interface NewUser {
     "name": string,
-    "password": number
+    "password": string
 }
 
 export interface RegistrationComplete {

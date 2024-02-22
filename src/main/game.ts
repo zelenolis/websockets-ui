@@ -1,4 +1,5 @@
 import { GamesArray, Ship } from "../data/interfaces.js";
+import { serverUsers } from "./main.js";
 
 let ind = 0;
 
@@ -163,7 +164,13 @@ export function finishCheck(gameInd: number) {
     const currentGame = games.filter(e => e.gameId === gameInd);
     const ships1 = currentGame[0].ships1.every(ship => ship.hits >= ship.length);
     const ships2 = currentGame[0].ships2.every(ship => ship.hits >= ship.length);
-    if (ships1 || ships2) {
+    if (ships1) {
+        const winId = currentGame[0].player2Ind;
+        serverUsers.addWins(winId);
+        return true
+    } else if (ships2) {
+        const winId = currentGame[0].player1Ind;
+        serverUsers.addWins(winId);
         return true
     } else {
         return false
