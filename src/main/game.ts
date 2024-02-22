@@ -91,11 +91,12 @@ class Games {
                     if (hits >= ship.length) {
                         ship.hits = hits;
                         shipStatus = "killed";
-                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });                
+                        const killedCells = getKilledCellsX(gameInd, xCoord, yCoord, shipX, shipY, shipLength, shootingPlayerId);
+                        return  killedCells;                
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
-                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+                        return [JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus })];
                     }                    
                 }
             } else {
@@ -104,11 +105,12 @@ class Games {
                     if (hits >= ship.length) {
                         ship.hits = hits;
                         shipStatus = "killed";
-                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+                        const killedCells = getKilledCellsY(gameInd, xCoord, yCoord, shipX, shipY, shipLength, shootingPlayerId);
+                        return  killedCells;
                     } else {
                         ship.hits = hits;
                         shipStatus = "shot";
-                        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+                        return [JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus })];
                     }    
                 }
             }
@@ -116,7 +118,7 @@ class Games {
 
         shipStatus = "miss";
         nextTurn(gameInd);
-        return JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus });
+        return [JSON.stringify({ "position": { x: xCoord, y: yCoord, }, "currentPlayer": shootingPlayerId, "status": shipStatus })];
         
     }
 
@@ -126,17 +128,36 @@ class Games {
         let randCoords: {x: number, y: number};
 
         if (shootingPlayerId === 1) {
-            const currentShips = currentGame[0].filed1;
+            const currentShoots = currentGame[0].filed1;
             do {
                 randCoords = randomCoords();
-            } while (currentShips.some(obj => matchCoords(randCoords.x, randCoords.y, obj.x, obj.y)));
+            } while (currentShoots.some(obj => matchCoords(randCoords.x, randCoords.y, obj.x, obj.y)));
         } else {
-            const currentShips = currentGame[0].filed2;
+            const currentShoots = currentGame[0].filed2;
             do {
                 randCoords = randomCoords();
-            } while (currentShips.some(obj => matchCoords(randCoords.x, randCoords.y, obj.x, obj.y)));
+            } while (currentShoots.some(obj => matchCoords(randCoords.x, randCoords.y, obj.x, obj.y)));
         }
         return randCoords
+    }
+
+    public checkRepeatAttack(x: number, y: number, gameInd: number, shootingPlayerId: number) {
+        const currentGame = games.filter(e => e.gameId === gameInd);
+        if (shootingPlayerId === 1) {
+            const currentShoots = currentGame[0].filed1;
+            if (currentShoots.some(obj => matchCoords(x, y, obj.x, obj.y))) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            const currentShoots = currentGame[0].filed2;
+            if (currentShoots.some(obj => matchCoords(x, y, obj.x, obj.y))) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
 }
@@ -187,6 +208,58 @@ export function getGameIdByPlayer(playerInd: number) {
         return {game:game2[0].gameId, player: game2[0].player1};
     }
     return undefined
+}
+
+function getKilledCellsX(gameInd: number, x: number, y: number, shipX: number, shipY: number, length: number, shootingPlayerId: number) {
+    const cells = [];
+    const finalCell = JSON.stringify({ "position": { x: x, y: y }, "currentPlayer": shootingPlayerId, "status": "killed" });
+    cells.push(finalCell);
+
+    for (let i = -1; i < length + 1; i++) {
+        const c1 = JSON.stringify({ "position": { x: shipX + i, y: shipY + 1 }, "currentPlayer": shootingPlayerId, "status": "missed" });
+        const c2 = JSON.stringify({ "position": { x: shipX + i, y: shipY - 1 }, "currentPlayer": shootingPlayerId, "status": "missed" });
+        cells.push(c1);
+        cells.push(c2);
+    }
+    cells.push(JSON.stringify({ "position": { x: shipX - 1, y: shipY }, "currentPlayer": shootingPlayerId, "status": "missed" }));
+    cells.push(JSON.stringify({ "position": { x: shipX + length, y: shipY }, "currentPlayer": shootingPlayerId, "status": "missed" }));
+    pushKilledCellsToGameData(gameInd, shootingPlayerId, cells);
+    return cells
+}
+
+function getKilledCellsY(gameInd: number, x: number, y: number, shipX: number, shipY: number, length: number, shootingPlayerId: number) {
+    const cells = [];
+    const finalCell = JSON.stringify({ "position": { x: x, y: y }, "currentPlayer": shootingPlayerId, "status": "killed" });
+    cells.push(finalCell);
+
+    for (let i = -1; i < length + 1; i++) {
+        const c1 = JSON.stringify({ "position": { x: shipX + 1, y: shipY + i }, "currentPlayer": shootingPlayerId, "status": "missed" });
+        const c2 = JSON.stringify({ "position": { x: shipX - 1, y: shipY + i }, "currentPlayer": shootingPlayerId, "status": "missed" });
+        cells.push(c1);
+        cells.push(c2);
+    }
+    cells.push(JSON.stringify({ "position": { x: shipX, y: shipY + length }, "currentPlayer": shootingPlayerId, "status": "missed" }));
+    cells.push(JSON.stringify({ "position": { x: shipX, y: shipY - 1 }, "currentPlayer": shootingPlayerId, "status": "missed" }));
+    pushKilledCellsToGameData(gameInd, shootingPlayerId, cells);
+    return cells
+}
+
+function pushKilledCellsToGameData(gameInd: number, shootingPlayerId: number, cells: string[]) {
+    const currentGame = games.filter(e => e.gameId === gameInd);
+
+    if (shootingPlayerId === 1) {
+        cells.forEach((val) => {
+            const data = JSON.parse(val);
+            const coord = { x: data.position.x, y: data.position.y }
+            currentGame[0].filed1.push(coord);
+        });
+    } else {
+        cells.forEach((val) => {
+            const data = JSON.parse(val);
+            const coord = { x: data.position.x, y: data.position.y }
+            currentGame[0].filed2.push(coord);
+        });
+    }
 }
 
 export const serverGames = new Games;

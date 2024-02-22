@@ -17,7 +17,7 @@ export const newSocket = () => {
 
         const ip = req.socket.remoteAddress;
 
-        console.log(`Connected ${ip}`);
+        //console.log(`Connected ${ip}`);
 
         connection.on('message', (message) => {
 
@@ -69,19 +69,26 @@ export const newSocket = () => {
                     sendTurn(attackData.gameId);
                     return;
                 } else {
+                    if (serverGames.checkRepeatAttack(attackData.x, attackData.y, attackData.gameId, attackData.indexPlayer)) {
+                        sendTurn(attackData.gameId);
+                        return
+                    }
                     const processedAttack = serverGames.attack(
                         attackData.gameId, 
                         attackData.x, attackData.y, 
                         attackData.indexPlayer
                         );
-                    sendAttack(attackData.gameId, processedAttack);
+                    processedAttack.forEach(val => sendAttack(attackData.gameId, val));                    
                     if (finishCheck(attackData.gameId)) {
                         sendFinish(attackData.gameId, attackData.indexPlayer);
                         allConnectionsSend(updWinners());
                         return
                     } else {
                         sendTurn(attackData.gameId);
-                        if (serverGames.getTurn(attackData.gameId) === 2) {
+                        if (
+                            serverGames.getTurn(attackData.gameId) === 2 &&
+                            serverGames.getUsersId(attackData.gameId, 2) === botId
+                            ) {
                             botTurn(attackData.gameId);
                         }                        
                     }
@@ -95,7 +102,7 @@ export const newSocket = () => {
                     randomCoords.x, randomCoords.y, 
                     randAttackData.indexPlayer
                     );
-                sendAttack(randAttackData.gameId, processedAttack);
+                processedAttack.forEach(val => sendAttack(randAttackData.gameId, val));
                 if (finishCheck(randAttackData.gameId)) {
                     sendFinish(randAttackData.gameId, randAttackData.indexPlayer);
                     allConnectionsSend(updWinners());
@@ -114,7 +121,7 @@ export const newSocket = () => {
         });
 
         connection.on('close', () => {
-            console.log(`Disconnected ${ip}`);
+            //console.log(`Disconnected ${ip}`);
             const dis = getCurrentInd(connection);
             checkWhoDisconnected(dis);
             allConnectionsSend(updWinners());
@@ -232,7 +239,6 @@ function checkWhoDisconnected(disconnectedId: number) {
     if (!gameId) {
         return
     } else {
-        console.log(gameId.game, gameId.player);
         sendFinish(gameId.game, gameId.player);
     }
 }
@@ -257,6 +263,6 @@ function botAttack(gameId: number) {
     do {
         const randomCoords = serverGames.getRandomShot(gameId, botId);
         const processedAttack = serverGames.attack(gameId, randomCoords.x, randomCoords.y, botId);
-        sendAttack(gameId, processedAttack);
+        processedAttack.forEach(val => sendAttack(gameId, val)); 
     } while (serverGames.getTurn(gameId) === 2)
 }
