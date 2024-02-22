@@ -34,7 +34,7 @@ interface coords {
 }
 
 export interface Ship {
-    position: {
+    "position": {
         "x": number,
         "y": number,
     },

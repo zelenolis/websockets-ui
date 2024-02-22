@@ -3,9 +3,11 @@ import { primaryParse, regParse, addToRoomParse, simpleDataParse } from './utils
 import { serverUsers, updWinners } from './main/main.js';
 import { serverRooms, updateRooms } from './main/rooms.js';
 import { serverGames, finishCheck, getGameIdByPlayer } from './main/game.js';
+import { shipsPlacement } from './main/gameBot.js'
 
 const connectionIds = new Map();
 let ind = 0;
+const botId = 1000000000;
 
 export const newSocket = () => {
 
@@ -57,7 +59,8 @@ export const newSocket = () => {
                     return
                 }                
 
-            } else if (primaryData.type === "attack") {                
+            } else if (primaryData.type === "attack") {
+                                
                 const attackData = simpleDataParse(primaryData.data);
                 const turn = serverGames.getTurn(attackData.gameId);
                 const player = attackData.indexPlayer;
@@ -72,6 +75,7 @@ export const newSocket = () => {
                         return
                     } else {
                         sendTurn(attackData.gameId);
+                        botTurn(attackData.gameId);
                     }
                 }
                 
@@ -86,6 +90,12 @@ export const newSocket = () => {
                 } else {
                     sendTurn(randAttackData.gameId);
                 }
+                
+            } else if (primaryData.type === "single_play") {
+                const currentInd = getCurrentInd(connection);
+                const gameInd = serverGames.newGame(currentInd, botId);
+                sendGame(currentInd, botId, gameInd);
+                serverGames.addShips(gameInd, shipsPlacement(), botId);
             }
   
         });
@@ -127,7 +137,11 @@ function sendGame (user1: number, user2: number, gameInd: number) {
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
     conn1.send(send1);
-    conn2.send(send2);
+    if(user2 === botId) {
+        return
+    } else {
+        conn2.send(send2);
+    }   
 }
 
 function startGame (gameNumber: number) {
@@ -140,11 +154,19 @@ function startGame (gameNumber: number) {
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
     conn1.send(send1);
-    conn2.send(send2);
+    if(user2 === botId) {
+        return
+    } else {
+        conn2.send(send2);
+    }
     const data3 = JSON.stringify({ currentPlayer: 1 });
     const send3 = JSON.stringify({ type: "turn", data: data3, "id": 0 });
     conn1.send(send3);
-    conn2.send(send3);
+    if(user2 === botId) {
+        return
+    } else {
+        conn2.send(send3);
+    }
 }
 
 function sendAttack (gameNumber: number, attackData: string) {
@@ -154,7 +176,11 @@ function sendAttack (gameNumber: number, attackData: string) {
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
     conn1.send(send);
-    conn2.send(send);
+    if(user2 === botId) {
+        return
+    } else {
+        conn2.send(send);
+    };
 }
 
 function sendTurn (gameNumber: number) {
@@ -165,7 +191,11 @@ function sendTurn (gameNumber: number) {
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
     conn1.send(send);
-    conn2.send(send);
+    if(user2 === botId) {
+        return
+    } else {
+        conn2.send(send);
+    }
 }
 
 function sendFinish(gameNumber: number, playerId: number, ) {
@@ -176,7 +206,11 @@ function sendFinish(gameNumber: number, playerId: number, ) {
     const conn1 = getCurrentConnection(user1);
     const conn2 = getCurrentConnection(user2);
     conn1.send(send);
-    conn2.send(send);
+    if(user2 === botId) {
+        return
+    } else {
+        conn2.send(send);
+    }
 }
 
 function checkWhoDisconnected(disconnectedId: number) {
@@ -187,4 +221,28 @@ function checkWhoDisconnected(disconnectedId: number) {
         console.log(gameId.game, gameId.player);
         sendFinish(gameId.game, gameId.player);
     }
+}
+
+function botTurn(gameId: number) {
+
+    const botTurn = serverGames.getTurn(gameId);
+    if (botTurn === 2) {
+        botAttack(gameId);
+        if (finishCheck(gameId)) {
+            sendFinish(gameId, botId);
+            return
+        } else {
+            sendTurn(gameId);
+        }
+    } else {
+        return
+    }
+}
+
+function botAttack(gameId: number) {
+    do {
+        const randomCoords = serverGames.getRandomShot(gameId, botId);
+        const processedAttack = serverGames.attack(gameId, randomCoords.x, randomCoords.y, botId);
+        sendAttack(gameId, processedAttack);
+    } while (serverGames.getTurn(gameId) === 2)
 }
