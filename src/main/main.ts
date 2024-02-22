@@ -5,49 +5,37 @@ const users: UsersArray[] = [];
 
 class Users {
     public newUser (data: NewUser, ind: number) {
-        //check if user already exist
-        users.forEach((user) => {
-            //exists and correct
-            if (user.name === data.name && user.password === data.password) {
-                const returnedData = JSON.stringify({
-                    "name": user.name,"index": ind, "error": false, "errorText": ""
-                });
-                const returned = JSON.stringify({
-                    "type": "reg",
-                    "data": returnedData,
-                    "id": 0
-                });
-                console.log("exist")
-                console.log(`name: ${user.name}, base pass: ${user.password}, inc pass: ${data.password}`)
-                return returned
-            }
-            // exists with wrong password
-            if (user.name === data.name && user.password !== data.password) {
-                const returnedData = JSON.stringify({
-                    "name": user.name,"index": ind, "error": true, "errorText": "incorrect password"
-                });
-                const returned = JSON.stringify({
-                    "type": "reg",
-                    "data": returnedData,
-                    "id": 0
-                });
-                console.log("pass")
-                console.log(`name: ${user.name}, base pass: ${user.password}, inc pass: ${data.password}`)
-                return returned
-            }
-        });
 
-        const createNewUser = {
-            "name": data.name,
-            "password": data.password,
-            "index": ind,
-            "wins": 0
+        const existUserId = users.map(user => user.name).indexOf(data.name);
+
+        let returnedData: string = '';
+
+        if (existUserId === -1) {
+            const createNewUser = {
+                "name": data.name,
+                "password": data.password,
+                "index": ind,
+                "wins": 0
+            }
+
+            users.push(createNewUser);
+
+            returnedData = JSON.stringify({
+                "name": createNewUser.name,"index": createNewUser.index, "error": false, "errorText": ""
+            });
+        } else {
+            if (users[existUserId].name === data.name && users[existUserId].password === data.password) {
+                returnedData = JSON.stringify({
+                    "name": users[existUserId].name,"index": ind, "error": false, "errorText": ""
+                });
+            }
+            if (users[existUserId].name === data.name && users[existUserId].password !== data.password) {
+                returnedData = JSON.stringify({
+                    "name": users[existUserId].name,"index": ind, "error": true, "errorText": "incorrect password"
+                });
+            }
         }
-        users.push(createNewUser);
 
-        const returnedData = JSON.stringify({
-            "name": createNewUser.name,"index": createNewUser.index, "error": false, "errorText": ""
-        });
         const returned = JSON.stringify({
             "type": "reg",
             "data": returnedData,

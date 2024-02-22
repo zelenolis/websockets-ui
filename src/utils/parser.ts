@@ -12,11 +12,11 @@ export const regParse = (data: string) => {
     const parsed = JSON.parse(data);
 
     const regName = parsed.name;
-    const regPass = parsed.name;
+    const regPass = parsed.password;
 
     return {
-        "name": regName,
-        "password": regPass
+        name: regName,
+        password: regPass
     }
 }
 
